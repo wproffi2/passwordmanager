@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <body style="background-color:whitesmoke;">
+    <head>
+      <title>Sign Up</title>
+      <link rel="stylesheet" href="{{ url_for('static', filename='styles/mainpage.css') }}">
+    </head>
+
+    <h1>Sign Up</h1>
+
+    <form method="POST">
+      Username:<br>
+      <input type="text" name="Username">
+      <br><br>
+      Password:<br>
+      <input type="password" name="Password">
+      <br><br>
+      Confirm Password:<br>
+      <input type="password" name="Confirm Password">
+      <br><br>
+      <input type="submit" class="button" value="Submit">
+    </form> 
+
+</body>
+</html>
