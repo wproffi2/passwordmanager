@@ -20,13 +20,12 @@ Installing:
         * ./setup.sh
 
 Deployment:
-1. 
-    * For Windows:
-        * Run launch.bat
-    
-    * For Linux:
-        * chmod +x launch.sh
-        * ./launch.sh
+* For Windows:
+    * Run launch.bat
+
+* For Linux:
+    * chmod +x launch.sh
+    * ./launch.sh
 
 Authors:
 1. Warrie Proffitt, wnprfftt@gmail.com
