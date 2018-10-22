@@ -9,11 +9,15 @@ import os, string, random
 import pandas
 
 #app files
-from .data import Data
+try:
+    from data import Data
+except:
+    from .data import Data
+    
 
 
 #Pad the password
-def PasswordPadd(password):
+def PasswordPad(password):
     odd_password = ''
     if len(password) < 16:
         v = True
@@ -36,6 +40,7 @@ def PasswordPadd(password):
     return(password)
 
 
+#Generate random password for user
 def NewPass(size):
     size = int(size)
     for i in range(32):
@@ -50,11 +55,13 @@ def NewPass(size):
             odd_password += password[i]
         password = odd_password
     
-    password = PasswordPadd(password)
+    password = PasswordPad(password)
 
     return(password)
 
 
+#Builds Crypto key
+#Crypto key is generated from the users password
 def KeyBuild(key, backend):
     data = Data()
 
@@ -77,15 +84,26 @@ def KeyBuild(key, backend):
 
 
 
+#class for encrypting, decrypting, and storing passwords,
+#ivs, and accound names
+#Passwords are stored in a list of dictionaries for easy
+#compatability with pandas
 class PasswordStorage:
+
     def __init__(self, key):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
-        self.file_name = os.path.join(cur_dir, 'passwords.csv')
+        #path to csv file where passwords are stored
+        self.file_name = os.path.join(cur_dir, 'passwords.csv') 
+        #cryptography backend
         self.backend = default_backend()
+        #cryptography key
         self.key = KeyBuild(key, self.backend)
+        #empty password list, will be update
+        #with proper key
         self.password_ls = []
 
 
+    #Update the key once user logs in
     def UpdateKey(self, key):
         key = KeyBuild(key, self.backend)
         self.key = key
@@ -93,17 +111,20 @@ class PasswordStorage:
         return(0)
 
 
+    #update the password list whenever need be
     def UpdateList(self):
         self.password_ls = self.Decrypt()
         return(0)
 
 
+    #Delete Password chosen by user
     def DeletePassword(self, account):
-        
         del_pos = None
-        
+        #get passwords
         pass_data = pandas.read_csv(self.file_name)
         pass_list = pass_data.to_dict('records')
+        
+        #search for account
         for i, d in enumerate(pass_list):
             if account == d['Account']:
                 del_pos = i
@@ -112,6 +133,7 @@ class PasswordStorage:
         if del_pos != None:
             pass_list.pop(del_pos)
         
+        #Rewrite passwords to csv file
         if pass_list != []:
             pass_data = DataFrame()
             pass_data = pass_data.append(pass_list)
@@ -121,12 +143,15 @@ class PasswordStorage:
         return(0)
 
 
+    #Encrypt password, either provided by user
+    #or randomly generated. 
+    #New Password is then added to csv file
     def Encrypt(self, account, size = 0, password = ''):
         
         if password == '' and size != 0:
             password = NewPass(size)
         else:
-            password = PasswordPadd(password)
+            password = PasswordPad(password)
         
         password = password.encode()
 
@@ -149,6 +174,7 @@ class PasswordStorage:
         return(0)
 
 
+    #Decrypt all passwords and returns the list of dictionaries
     def Decrypt(self):
         dec_ls = []
         try:
@@ -180,5 +206,6 @@ class PasswordStorage:
 
             return(dec_ls)
         except:
+            #if anything goes wrong, return empty list
             return(dec_ls)
             

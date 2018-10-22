@@ -34,7 +34,6 @@ jwt = JWTManager(application)
 
 def CloseApp():
     #Closes Application
-    
     sleep(0.5)
     os._exit(1)
     return(0)
@@ -233,6 +232,8 @@ def PasswordDisplay():
         return render_template('passwords.html', data=data)
 
 
+#Opens Webbrowser and 
+#directs it to localhost on port 5000
 def OpenLocalHost():
     sleep(0.5)
     url = 'http://127.0.0.1:5000/'
@@ -241,7 +242,8 @@ def OpenLocalHost():
 
 
 if __name__ == '__main__':
+    #Creates new thread to open app
     t = Thread(target=OpenLocalHost)
     t.daemon = True
     t.start()
-    application.run(debug=False)
+    application.run(debug=False) #Flask Run
