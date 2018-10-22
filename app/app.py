@@ -184,7 +184,6 @@ def UpdatePassword():
 
 
 #Will display add page
-#Currently does nothing 
 @application.route('/add', methods = ['POST', 'GET'])
 @jwt_required
 def AddPassword():
@@ -205,7 +204,6 @@ def AddPassword():
 
 
 #Displays the delete page
-#Currently does nothing 
 @application.route('/delete', methods = ['POST', 'GET'])
 @jwt_required
 def DeletePassword():
