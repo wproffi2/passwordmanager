@@ -33,7 +33,8 @@ jwt = JWTManager(application)
 
 
 def CloseApp():
-    #Closes Application 
+    #Closes Application
+    
     sleep(0.5)
     os._exit(1)
     return(0)
@@ -170,7 +171,7 @@ def NewPassword():
 @jwt_required
 def UpdatePassword():
     if request.method == 'POST':
-        data = pass_store.DecryptAll()
+        data = pass_store.password_ls
         account = request.form['account']
         for d in data:
             if account == d['Account']:
@@ -178,7 +179,7 @@ def UpdatePassword():
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
-        data = pass_store.DecryptAll()
+        data = pass_store.password_ls
         return(render_template('update.html', data=data))
 
 
@@ -197,7 +198,7 @@ def AddPassword():
         if confirm_password != password:
             return(redirect(url_for('AddPassword')))
         else:
-            pass_store.AddPassword(account, password)
+            pass_store.Encrypt(account, 0, password)
             return(redirect(url_for('Main')))
 
     return(0)
@@ -209,15 +210,15 @@ def AddPassword():
 @jwt_required
 def DeletePassword():
     if request.method == 'POST':
-        data = pass_store.DecryptAll()
+        data = pass_store.password_ls
         account = request.form['account']
-        for d in data:
-            if account == d['Account']:
-                print(True)
+        
+        pass_store.DeletePassword(account)
+
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
-        data = pass_store.DecryptAll()
+        data = pass_store.password_ls
         return(render_template('delete.html', data=data))
 
 
@@ -230,7 +231,7 @@ def PasswordDisplay():
             return(redirect(url_for('Logout')))
     
     elif request.method == 'GET':
-        data = pass_store.DecryptAll()
+        data = pass_store.password_ls
         return render_template('passwords.html', data=data)
 
 
