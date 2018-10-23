@@ -12,7 +12,7 @@ A Password Manager I have built for myself using Python and JavaScript.
 1. git clone https://github.com/wproffi2/passwordmanager
 2. 
     * For Windows:
-        1. Run setup.bat
+        * Run setup.bat
         
     * For Linux:
         * chmod +x setup.sh

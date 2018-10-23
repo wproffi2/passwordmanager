@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
-  <body style="background-color:whitesmoke;">
+  <body>
     <head>
     <title>Welcome to Password Manager</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/mainpage.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
     </head>
     <h1>Login</h1>
 
     <form method="POST">
-      Username:<br>
+      <h4>Username:</h6>
       <input type="text" name="Username">
       <br><br>
-      Password:<br>
+      <h4>Password:</h6>
       <input type="password" name="Password">
       <br><br>
       <input type="submit" class="button" value="Submit">
