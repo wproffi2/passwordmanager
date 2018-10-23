@@ -19,11 +19,11 @@ from flask_jwt_extended import (
 
 #app files
 from data.encryption import PasswordStorage
-from data.data import Data
+#from data.data import Data
 
 key = 'not_real_key' #temp key for pass_store
 pass_store = PasswordStorage(key) 
-data = Data()
+#data = Data()
 
 application = Flask(__name__)
 application.config['JWT_SECRET_KEY'] = str(os.urandom(16))
@@ -92,7 +92,7 @@ def Login():
     elif request.method == 'POST':
         username = request.form['Username']
         password = request.form['Password']
-        check = data.CheckUser(username, password)
+        check = pass_store.CheckUser(username, password)
         if check:
             pass_store.UpdateKey(password)
             access_token = create_access_token(identity=username)
@@ -117,7 +117,7 @@ def SignUp():
             return(redirect(url_for('SignUp')))
         else:
             password = pbkdf2_sha256.hash(password)
-            data.WriteNewUser(username, password)
+            pass_store.WriteNewUser(username, password)
 
             return(redirect(url_for('Login')))
     return(0)

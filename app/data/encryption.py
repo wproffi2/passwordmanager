@@ -3,17 +3,11 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from binascii import hexlify, unhexlify
+from passlib.hash import pbkdf2_sha256
 from base64 import b64encode
 from pandas import DataFrame
 import os, string, random
 import pandas
-
-#app files
-try:
-    from data import Data
-except:
-    from .data import Data
-    
 
 
 #Pad the password
@@ -62,13 +56,7 @@ def NewPass(size):
 
 #Builds Crypto key
 #Crypto key is generated from the users password
-def KeyBuild(key, backend):
-    data = Data()
-
-    salt = data.GetSalt()
-    if salt == b'' or salt == '':
-        salt = os.urandom(16)
-        data.WriteSalt(salt)
+def KeyBuild(key, backend, salt):
     
     key = key.encode()
     
@@ -91,13 +79,13 @@ def KeyBuild(key, backend):
 class PasswordStorage:
 
     def __init__(self, key):
-        cur_dir = os.path.dirname(os.path.realpath(__file__))
+        self.cur_dir = os.path.dirname(os.path.realpath(__file__))
         #path to csv file where passwords are stored
-        self.file_name = os.path.join(cur_dir, 'passwords.csv') 
+        self.csv_file = os.path.join(self.cur_dir, 'passwords.csv') 
         #cryptography backend
         self.backend = default_backend()
         #cryptography key
-        self.key = KeyBuild(key, self.backend)
+        self.key = KeyBuild(key, self.backend, b'')
         #empty password list, will be update
         #with proper key
         self.password_ls = []
@@ -105,7 +93,7 @@ class PasswordStorage:
 
     #Update the key once user logs in
     def UpdateKey(self, key):
-        key = KeyBuild(key, self.backend)
+        key = KeyBuild(key, self.backend, self.salt)
         self.key = key
         self.UpdateList()
         return(0)
@@ -121,7 +109,7 @@ class PasswordStorage:
     def DeletePassword(self, account):
         del_pos = None
         #get passwords
-        pass_data = pandas.read_csv(self.file_name)
+        pass_data = pandas.read_csv(self.csv_file)
         pass_list = pass_data.to_dict('records')
         
         #search for account
@@ -137,7 +125,7 @@ class PasswordStorage:
         if pass_list != []:
             pass_data = DataFrame()
             pass_data = pass_data.append(pass_list)
-            pass_data.to_csv(self.file_name, mode= 'w', header=True, index=False)
+            pass_data.to_csv(self.csv_file, mode= 'w', header=True, index=False)
         
         self.UpdateList()
         return(0)
@@ -167,7 +155,7 @@ class PasswordStorage:
         pass_ls = [pass_dict]
         pass_data = DataFrame()
         pass_data = pass_data.append(pass_ls)
-        pass_data.to_csv(self.file_name, mode= 'a', header=True, index=False)
+        pass_data.to_csv(self.csv_file, mode= 'a', header=True, index=False)
         
         self.UpdateList()
         
@@ -178,7 +166,7 @@ class PasswordStorage:
     def Decrypt(self):
         dec_ls = []
         try:
-            pass_data = pandas.read_csv(self.file_name)
+            pass_data = pandas.read_csv(self.csv_file)
             pass_list = pass_data.to_dict('records')
             
             for d in pass_list:
@@ -209,3 +197,55 @@ class PasswordStorage:
             #if anything goes wrong, return empty list
             return(dec_ls)
             
+    def WriteNewUser(self, username, password):
+        salt = os.urandom(16)
+        salt = hexlify(salt).decode()
+        file_name = os.path.join(self.cur_dir, 'user')
+        f = open(file_name, 'w')
+        
+        f.write(username)
+        f.write('\n')
+        
+        f.write(password)
+        f.write('\n')
+
+        f.write(salt)
+        f.close()
+        return(0)
+
+    def CheckUser(self, username, password):
+        file_name = os.path.join(self.cur_dir, 'user')
+        f = open(file_name, 'r')
+        txt_user = f.readline()
+        txt_password = f.readline()
+        salt = f.readline()
+        f.close()
+        
+        txt_user = txt_user.rstrip()
+        txt_password = txt_password.rstrip()
+        salt = salt.encode()
+        self.salt = salt
+
+        if txt_user == username and pbkdf2_sha256.verify(password, txt_password):
+            return(True)
+        else:
+            return(False)
+
+    def GetSalt(self):
+        file_name = os.path.join(self.cur_dir, 'salt')
+        try:
+            f = open(file_name, 'r')
+            salt = f.readline()
+            salt = salt.encode()
+            salt = unhexlify(salt)
+            return(salt)
+        except Exception as e:
+            print(e)
+
+    def WriteSalt(self, salt):
+        salt = hexlify(salt).decode()
+        file_name = os.path.join(self.cur_dir, 'salt')
+        f = open(file_name, 'w')
+        f.write(salt)
+        f.close()
+        return(0)
