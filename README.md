@@ -1,15 +1,14 @@
-# passwordmanager
+# Password Manager
 A Password Manager I have built for myself using Python and JavaScript.
 
-# Heading 1
-Prerequisites:
+# Prerequisites:
 * Python 3.6 or Newer
 * Latest version of PIP or PIP3
 * Flask==0.12.2
 * Flask-JWT-Extended==3.12.1
 * passlib==1.7.1
 
-Installing:
+# Installing:
 1. git clone https://github.com/wproffi2/passwordmanager
 2. 
     * For Windows:
@@ -19,7 +18,7 @@ Installing:
         * chmod +x setup.sh
         * ./setup.sh
 
-Deployment:
+# Deployment:
 * For Windows:
     * Run launch.bat
 
@@ -27,5 +26,5 @@ Deployment:
     * chmod +x launch.sh
     * ./launch.sh
 
-Authors:
+# Authors:
 1. Warrie Proffitt, wnprfftt@gmail.com

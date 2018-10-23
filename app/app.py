@@ -140,6 +140,7 @@ def Shutdown():
 #Displays the logout page and closes the app
 @application.route('/logout')
 def Logout():
+    #removes users cookies
     resp = make_response(render_template('logout.html'))
     unset_jwt_cookies(resp)
     
