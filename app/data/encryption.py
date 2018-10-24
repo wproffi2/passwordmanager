@@ -230,22 +230,3 @@ class PasswordStorage:
             return(True)
         else:
             return(False)
-
-    def GetSalt(self):
-        file_name = os.path.join(self.cur_dir, 'salt')
-        try:
-            f = open(file_name, 'r')
-            salt = f.readline()
-            salt = salt.encode()
-            salt = unhexlify(salt)
-            return(salt)
-        except Exception as e:
-            print(e)
-
-    def WriteSalt(self, salt):
-        salt = hexlify(salt).decode()
-        file_name = os.path.join(self.cur_dir, 'salt')
-        f = open(file_name, 'w')
-        f.write(salt)
-        f.close()
-        return(0)

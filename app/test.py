@@ -43,7 +43,7 @@ class AppTestCase(TestCase):
         resp = self.app.get('/main')
         self.assertEqual(resp.status_code, 401)
         
-    
+
 
 if __name__ == '__main__':
     main()

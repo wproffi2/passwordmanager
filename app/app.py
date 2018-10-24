@@ -247,4 +247,4 @@ if __name__ == '__main__':
     t = Thread(target=OpenLocalHost)
     t.daemon = True
     t.start()
-    application.run(debug=False) #Flask Run
+    application.run(debug=False) #Run Flask 
