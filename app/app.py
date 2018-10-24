@@ -112,7 +112,7 @@ def SignUp():
     elif request.method == 'POST':
         username = request.form['Username']
         password = request.form['Password']
-        confirm_password = request.form['Confirm Password']
+        confirm_password = request.form['Confirm_Password']
         if confirm_password != password:
             return(redirect(url_for('SignUp')))
         else:
