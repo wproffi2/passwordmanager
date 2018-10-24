@@ -196,7 +196,8 @@ class PasswordStorage:
         except:
             #if anything goes wrong, return empty list
             return(dec_ls)
-            
+    
+    #Write new users 
     def WriteNewUser(self, username, password):
         salt = os.urandom(16)
         salt = hexlify(salt).decode()
@@ -213,6 +214,7 @@ class PasswordStorage:
         f.close()
         return(0)
 
+    #Check user upon login 
     def CheckUser(self, username, password):
         file_name = os.path.join(self.cur_dir, 'user')
         f = open(file_name, 'r')
