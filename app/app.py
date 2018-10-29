@@ -1,8 +1,17 @@
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from binascii import hexlify, unhexlify
+from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import pbkdf2_sha256
+from sqlalchemy import create_engine
+from base64 import b64encode
 from threading import Thread
 from time import sleep
 import webbrowser
 import sys, os
+import pandas
 
 from flask import (
     Flask, render_template, request, 
@@ -17,20 +26,160 @@ from flask_jwt_extended import (
     unset_jwt_cookies
 )
 
-#app files
-from data.encryption import PasswordStorage
-#from data.data import Data
 
-key = 'not_real_key' #temp key for pass_store
-pass_store = PasswordStorage(key) 
-#data = Data()
+cur_dir = os.path.join(os.path.dirname(__file__), 'app.db')
+db_uri = 'sqlite:///{}'.format(cur_dir)
 
 application = Flask(__name__)
 application.config['JWT_SECRET_KEY'] = str(os.urandom(16))
 application.config['JWT_TOKEN_LOCATION'] = ['cookies']
 application.config['JWT_COOKIE_CSRF_PROTECT'] = False
-jwt = JWTManager(application)
+application.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+jwt = JWTManager(application)
+db = SQLAlchemy(application)
+
+
+#Pad the password
+def PasswordPad(password):
+    odd_password = ''
+    if len(password) < 16:
+        v = True
+        while v:
+            password += '#'
+            if len(password) == 16:
+                v = False
+
+    elif len(password) > 16 and len(password) < 32:
+        v = True
+        while v:
+            password += '#'
+            if len(password) == 32:
+                v = False
+    
+    elif len(password) > 32:
+        for i in range(32):
+            odd_password += password[i]
+        password = odd_password
+    return(password)
+
+
+#Generate random password for user
+def NewPass(size):
+    size = int(size)
+    for i in range(32):
+        password = os.urandom(i)
+        password = b64encode(password).decode()
+        if len(password) >= size:
+            break
+    
+    odd_password = ''
+    if size % 2 != 0 and size < 44:
+        for i in range(size):
+            odd_password += password[i]
+        password = odd_password
+    
+    password = PasswordPad(password)
+
+    return(password)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(500), unique=True, nullable=False)
+    salt = db.Column(db.String(500), unique=True, nullable=False)
+
+class Passwords(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    Account = db.Column(db.String(80), unique=True, nullable=False)
+    Password = db.Column(db.String(500), unique=True, nullable=False)
+    IV = db.Column(db.String(500), unique=True, nullable=False)
+
+
+class PasswordManager:
+    def __init__(self, key, salt):
+        self.backend = default_backend()
+        self.salt = salt
+        self.key = self.KeyBuild(key)
+        self.password_ls = []
+
+    def KeyBuild(self, key):
+        key = key.encode()
+        
+        hdkf = HKDF(
+            algorithm = hashes.SHA512(),
+            length = 32,
+            salt = self.salt,
+            info = None,
+            backend = self.backend
+        )
+        key = hdkf.derive(key)
+        return(key)
+
+    def UpdateClass(self, key, salt):
+        self.salt = salt
+        key = self.KeyBuild(key)
+        self.key = key
+        self.UpdatePassList()
+        return(0)
+
+    def Encrypt(self, account, size = 0, password = ''):
+        if password == '' and size != 0:
+            password = NewPass(size)
+        else:
+            password = PasswordPad(password)
+        
+        password = password.encode()
+
+        iv = os.urandom(16)
+        cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
+        enc = cipher.encryptor()
+        ciphertext = enc.update(password) + enc.finalize()
+        
+        iv = hexlify(iv).decode()
+        ciphertext = hexlify(ciphertext).decode()
+        
+        new_password = Passwords(Account=account, Password=ciphertext, IV=iv)
+        db.session.add(new_password)
+        db.session.commit()
+
+        self.UpdatePassList()
+
+        return(0)
+
+    def UpdatePassList(self):
+        engine = create_engine(db_uri)
+        data_frame = pandas.read_sql(sql = 'SELECT * FROM passwords', con=engine)
+        enc_password_ls = data_frame.to_dict('records')
+
+        dec_ls = []
+        for d in enc_password_ls:
+            dec_data = {}
+            account = d['Account']
+            enc_pass = d['Password']
+            iv = d['IV']
+            
+            iv = iv.encode()
+            iv = unhexlify(iv)
+            enc_pass = enc_pass.encode()
+            enc_pass = unhexlify(enc_pass)
+
+            cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
+            dec = cipher.decryptor()
+            pt = dec.update(enc_pass) + dec.finalize()
+
+            dec_data['Account'] = account
+            dec_data['Password'] = pt.decode()
+            dec_ls.append(dec_data)
+
+        for d in dec_ls:
+            d['Password'] = d['Password'].rstrip('#')
+        
+        self.password_ls = dec_ls
+        return(0)
+
+pass_manager = PasswordManager(key='not_real_key', salt=b'not_real_salt')
 
 def CloseApp():
     #Closes Application
@@ -92,9 +241,16 @@ def Login():
     elif request.method == 'POST':
         username = request.form['Username']
         password = request.form['Password']
-        check = pass_store.CheckUser(username, password)
-        if check:
-            pass_store.UpdateKey(password)
+        #check = pass_store.CheckUser(username, password)
+        
+        db_user = User.query.filter_by(username=username).first()
+        
+        if db_user.username == username and pbkdf2_sha256.verify(password, db_user.password):
+            #pass_store.UpdateKey(password)
+            salt = db_user.salt
+            salt = salt.encode()
+            pass_manager.UpdateClass(password, salt)
+
             access_token = create_access_token(identity=username)
             resp = make_response(redirect(url_for('Main')))
             set_access_cookies(resp, access_token)
@@ -117,7 +273,13 @@ def SignUp():
             return(redirect(url_for('SignUp')))
         else:
             password = pbkdf2_sha256.hash(password)
-            pass_store.WriteNewUser(username, password)
+            salt = os.urandom(16)
+            salt = hexlify(salt).decode()
+
+            user = User(username=username, password=password, salt=salt)
+
+            db.session.add(user)
+            db.session.commit()
 
             return(redirect(url_for('Login')))
     return(0)
@@ -157,8 +319,8 @@ def NewPassword():
     if request.method == 'POST':
         account = request.form['account'] #account name
         size = request.form['size'] #requested password size 
-        
-        pass_store.Encrypt(account, size) #create new password
+         
+        pass_manager.Encrypt(account, size)#create new password
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
@@ -170,8 +332,10 @@ def NewPassword():
 @application.route('/update', methods = ['POST', 'GET'])
 @jwt_required
 def UpdatePassword():
+    data = [{}]
     if request.method == 'POST':
-        data = pass_store.password_ls
+        
+        #data = pass_store.password_ls
         account = request.form['account']
         for d in data:
             if account == d['Account']:
@@ -179,7 +343,7 @@ def UpdatePassword():
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
-        data = pass_store.password_ls
+        #data = pass_store.password_ls
         return(render_template('update.html', data=data))
 
 
@@ -197,7 +361,8 @@ def AddPassword():
         if confirm_password != password:
             return(redirect(url_for('AddPassword')))
         else:
-            pass_store.Encrypt(account, 0, password)
+            #pass_store.Encrypt(account, 0, password)
+            pass_manager.Encrypt(account, 0, password)
             return(redirect(url_for('Main')))
 
     return(0)
@@ -207,16 +372,17 @@ def AddPassword():
 @application.route('/delete', methods = ['POST', 'GET'])
 @jwt_required
 def DeletePassword():
+    data = [{}]
     if request.method == 'POST':
-        data = pass_store.password_ls
+        #data = pass_store.password_ls
         account = request.form['account']
         
-        pass_store.DeletePassword(account)
+        #pass_store.DeletePassword(account)
 
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
-        data = pass_store.password_ls
+        #data = pass_store.password_ls
         return(render_template('delete.html', data=data))
 
 
@@ -229,7 +395,8 @@ def PasswordDisplay():
             return(redirect(url_for('Logout')))
     
     elif request.method == 'GET':
-        data = pass_store.password_ls
+        #data = pass_store.password_ls
+        data = pass_manager.password_ls
         return render_template('passwords.html', data=data)
 
 
@@ -243,6 +410,7 @@ def OpenLocalHost():
 
 
 if __name__ == '__main__':
+    db.create_all()
     #Creates new thread to open app
     t = Thread(target=OpenLocalHost)
     t.daemon = True
