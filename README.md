@@ -11,23 +11,10 @@ A Password Manager I have built for myself using Python and JavaScript.
 * pandas==0.23.4
 * passlib==1.7.1
 * SQLite3
+* cx_Freeze 
+
 # Installing:
 1. git clone https://github.com/wproffi2/passwordmanager
-2. 
-    * For Windows:
-        * Run setup.bat
-        
-    * For Linux:
-        * chmod +x setup.sh
-        * ./setup.sh
-
-# Deployment:
-* For Windows:
-    * Run launch.bat
-
-* For Linux:
-    * chmod +x launch.sh
-    * ./launch.sh
 
 # Authors:
 1. Warrie Proffitt, wnprfftt@gmail.com
