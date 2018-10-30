@@ -10,6 +10,7 @@ A Password Manager I have built for myself using Python and JavaScript.
 * Flask-SQLAlchemy==2.3.2
 * pandas==0.23.4
 * passlib==1.7.1
+* SQLite3
 # Installing:
 1. git clone https://github.com/wproffi2/passwordmanager
 2. 

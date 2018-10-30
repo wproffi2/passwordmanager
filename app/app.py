@@ -25,16 +25,24 @@ from flask_jwt_extended import (
     jwt_refresh_token_required, set_access_cookies,
     unset_jwt_cookies
 )
+db_name = 'app.db'
 
+if getattr(sys, 'frozen', False):
+    cur_dir = os.path.dirname(sys.executable)
+    cur_dir = cur_dir + '\\' + db_name
+else:
+    cur_dir = os.path.join(os.path.dirname(__file__), db_name)
 
-cur_dir = os.path.join(os.path.dirname(__file__), 'app.db')
+print('Current Directory: ', cur_dir)
 db_uri = 'sqlite:///{}'.format(cur_dir)
+print('DB URI: ', db_uri)
+
 
 application = Flask(__name__)
 application.config['JWT_SECRET_KEY'] = str(os.urandom(16))
 application.config['JWT_TOKEN_LOCATION'] = ['cookies']
 application.config['JWT_COOKIE_CSRF_PROTECT'] = False
-application.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}'.format(db_name)
 application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 jwt = JWTManager(application)
