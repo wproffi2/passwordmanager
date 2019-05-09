@@ -1,6 +1,6 @@
-cryptography==2.2.2
-Flask==0.12.2
-Flask-JWT-Extended==3.12.1
-Flask-SQLAlchemy==2.3.2
-pandas==0.23.4
+cryptography==2.6.1
+Flask==1.0.2
+Flask-JWT-Extended==3.18.1
+Flask-SQLAlchemy==2.4.0
+pandas==0.24.2
 passlib==1.7.1

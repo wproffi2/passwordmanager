@@ -25,6 +25,7 @@ from flask_jwt_extended import (
     jwt_refresh_token_required, set_access_cookies,
     unset_jwt_cookies
 )
+
 db_name = 'app.db'
 
 if getattr(sys, 'frozen', False):
@@ -33,9 +34,7 @@ if getattr(sys, 'frozen', False):
 else:
     cur_dir = os.path.join(os.path.dirname(__file__), db_name)
 
-print('Current Directory: ', cur_dir)
 db_uri = 'sqlite:///{}'.format(cur_dir)
-print('DB URI: ', db_uri)
 
 
 application = Flask(__name__)
@@ -92,11 +91,13 @@ def NewPass(size):
 
     return(password)
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(500), unique=True, nullable=False)
     salt = db.Column(db.String(500), unique=True, nullable=False)
+
 
 class Passwords(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -187,6 +188,17 @@ class PasswordManager:
         self.password_ls = dec_ls
         return(0)
 
+    def PasswordDelete(self, account):
+        Passwords.query.filter_by(Account=account).delete()
+        db.session.commit()
+        self.UpdatePassList()
+        return(0)
+    
+    def PasswordUpdate(self, account):
+        self.PasswordDelete(account)
+        self.Encrypt(account)
+        return(0)
+
 pass_manager = PasswordManager(key='not_real_key', salt=b'not_real_salt')
 
 def CloseApp():
@@ -249,12 +261,13 @@ def Login():
     elif request.method == 'POST':
         username = request.form['Username']
         password = request.form['Password']
-        #check = pass_store.CheckUser(username, password)
         
-        db_user = User.query.filter_by(username=username).first()
-        
+        try:
+            db_user = User.query.filter_by(username=username).first()
+        except:
+            print('No User Found') #404 Page here
+
         if db_user.username == username and pbkdf2_sha256.verify(password, db_user.password):
-            #pass_store.UpdateKey(password)
             salt = db_user.salt
             salt = salt.encode()
             pass_manager.UpdateClass(password, salt)
@@ -340,14 +353,11 @@ def NewPassword():
 @application.route('/update', methods = ['POST', 'GET'])
 @jwt_required
 def UpdatePassword():
-    data = [{}]
+    data = pass_manager.password_ls
     if request.method == 'POST':
         
-        #data = pass_store.password_ls
         account = request.form['account']
-        for d in data:
-            if account == d['Account']:
-                print(True)
+        pass_manager.PasswordUpdate(account)
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
@@ -380,17 +390,15 @@ def AddPassword():
 @application.route('/delete', methods = ['POST', 'GET'])
 @jwt_required
 def DeletePassword():
-    data = [{}]
+    data = pass_manager.password_ls
     if request.method == 'POST':
         #data = pass_store.password_ls
         account = request.form['account']
-        
-        #pass_store.DeletePassword(account)
+        pass_manager.PasswordDelete(account)
 
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
-        #data = pass_store.password_ls
         return(render_template('delete.html', data=data))
 
 
@@ -403,7 +411,6 @@ def PasswordDisplay():
             return(redirect(url_for('Logout')))
     
     elif request.method == 'GET':
-        #data = pass_store.password_ls
         data = pass_manager.password_ls
         return render_template('passwords.html', data=data)
 

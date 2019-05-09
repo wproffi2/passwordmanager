@@ -26,7 +26,8 @@ build_exe_options = {
     'include_files': [
         os.path.join(sys.base_prefix, 'DLLs', 'sqlite3.dll'),
         'templates/', 'static/'
-    ]
+    ],
+    'add_to_path': True
 }
 
 os.environ['TCL_LIBRARY'] = "C:\\Program Files\\Python35\\tcl\\tcl8.6"
