@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <center>
-    <body>
-        <title>Pandora's Box</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
-    </head>
 
-    <h1>Welcome to Pandora's Box</h1>
-    <form method="POST">        
-        <input type="submit" class="button" name = 'pass' value="View Passwords" /><br><br>
-        <input type="submit" class="button" name = 'pass' value="Add Password"><br><br>
-        <input type="submit" class="button" name = 'pass' value="New Password"><br><br>
-        <input type="submit" class="button" name = 'pass' value="Update Password"><br><br>
-        <input type="submit" class="button" name = 'pass' value="Delete Password"><br><br>
-        <input type="submit" class="button" name = 'pass' value="Logout">
-    </form>
-    </body>
-    </center>
+<head>
+
+<body>
+    <title>Pandora's Box</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
+    </head>
+    <div>
+        <h1>Welcome to Pandora's Box</h1>
+        <form method="POST">
+            <input type="submit" class="button" name='pass' value="View Passwords" /><br><br>
+            <input type="submit" class="button" name='pass' value="Add Password"><br><br>
+            <input type="submit" class="button" name='pass' value="New Password"><br><br>
+            <input type="submit" class="button" name='pass' value="Update Password"><br><br>
+            <input type="submit" class="button" name='pass' value="Delete Password"><br><br>
+            <input type="submit" class="button" name='pass' value="Logout">
+        </form>
+    </div>
+</body>
+
 </html>

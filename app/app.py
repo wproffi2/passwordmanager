@@ -9,7 +9,6 @@ from sqlalchemy import create_engine
 from base64 import b64encode
 from threading import Thread
 from time import sleep
-import webbrowser
 import sys, os
 import pandas
 
@@ -431,24 +430,8 @@ def PasswordDisplay():
         return render_template('passwords.html', data=data)
 
 
-#Opens Webbrowser and 
-#directs it to localhost on port 5000
-def OpenLocalHost():
-    sleep(0.5)
-    url = 'http://127.0.0.1:5000/'
-    webbrowser.open_new(url)
-    return(0)
 
 
 if __name__ == '__main__':
-    try:
-        db.create_all()
-        #Creates new thread to open app
-        #t = Thread(target=OpenLocalHost)
-        #t.daemon = True
-        #t.start()
-        #application.run(debug=False) #Run Flask 
-        init_gui(application)
-    except Exception as e:
-        print(e)
-        #sleep(10)
+    db.create_all()
+    init_gui(application)

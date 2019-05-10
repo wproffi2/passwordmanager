@@ -1,45 +1,47 @@
 <!DOCTYPE html>
 <html>
-    <body>
-        <head>
-            <title>Delete Password</title>
-            <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
-        </head>
-        
+
+<body>
+
+    <head>
+        <title>Delete Password</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
+    </head>
+
+
+
+    <input type='button' action="action" onclick="window.history.go(-1); return false;" class="back" value="Back">
+    <div>
+        <h1>Delete Password</h1>
         
 
-        <input type='button' action="action" onclick="window.history.go(-1); return false;" class="back" value="Back">
-        <div>
-            <h1>Delete Password</h1>
-        <form method="POST" id='passes'></form>
-        
-        <form method="POST">
+        <form method="POST" class='fixedform'>
             <h4>Account Name</h4>
             <input type="text" name="account"><br>
             <input type="submit" class="button" value="Submit" />
         </form>
 
-        
+        <form method="POST" id='passes'></form>
 
         <script>
             var password_accounts = '{{data | tojson | safe}}';
             var obj = JSON.parse(password_accounts);
-            
-            function createpar(acc){
-                    var par = document.createElement('p');
-                    par.innerHTML = acc;
-                    par.id = acc;
-                    par.style.color = 'whitesmoke';
-                    document.getElementById('passes').appendChild(par);
+
+            function createpar(acc) {
+                var par = document.createElement('p');
+                par.innerHTML = acc;
+                par.id = acc;
+                par.style.color = 'whitesmoke';
+                document.getElementById('passes').appendChild(par);
             }
-                
+
             var i;
-            for (i=0; i < obj.length; i++) {
+            for (i = 0; i < obj.length; i++) {
                 var account = obj[i].Account;
                 createpar(account);
             }
         </script>
     </div>
-    </body>
+</body>
 
 </html>

@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
-  <body>
-    
-    <head>
+
+<body>
+
+  <head>
     <title>Welcome to Pandora's Box</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
-    </head>
-    
-    <input type='button' action="action" onclick="window.history.go(-1); return false;" class="back" value="Back">
-    <div>
-        <h1>Login</h1>
+  </head>
+
+  <input type='button' action="action" onclick="window.history.go(-1); return false;" class="back" value="Back">
+  <div>
+    <h1>Login</h1>
     <form method="POST">
       <h4>Username</h4>
       <input type="text" name="Username">
@@ -21,4 +22,5 @@
     </form>
   </div>
 </body>
+
 </html>
