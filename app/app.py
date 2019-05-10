@@ -1,35 +1,32 @@
-try:
-    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import hashes
-    from binascii import hexlify, unhexlify
-    from flask_sqlalchemy import SQLAlchemy
-    from passlib.hash import pbkdf2_sha256
-    from sqlalchemy import create_engine
-    from base64 import b64encode
-    from threading import Thread
-    from time import sleep
-    import webbrowser
-    import sys, os
-    import pandas
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from binascii import hexlify, unhexlify
+from flask_sqlalchemy import SQLAlchemy
+from passlib.hash import pbkdf2_sha256
+from sqlalchemy import create_engine
+from base64 import b64encode
+from threading import Thread
+from time import sleep
+import webbrowser
+import sys, os
+import pandas
 
-    from flask import (
-        Flask, render_template, request, 
-        redirect, url_for, json, 
-        jsonify, make_response
-    )
-    from flask_jwt_extended import (
-        JWTManager, jwt_required, create_access_token, 
-        get_jwt_identity, current_user, get_jwt_claims, 
-        verify_jwt_in_request, create_refresh_token, 
-        jwt_refresh_token_required, set_access_cookies,
-        unset_jwt_cookies
-    )
+from flask import (
+    Flask, render_template, request, 
+    redirect, url_for, json, 
+    jsonify, make_response
+)
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token, 
+    get_jwt_identity, current_user, get_jwt_claims, 
+    verify_jwt_in_request, create_refresh_token, 
+    jwt_refresh_token_required, set_access_cookies,
+    unset_jwt_cookies
+)
 
-except Exception as e:
-    print(e)
-    sleep(10)
+
 
 
 
