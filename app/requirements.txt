@@ -4,3 +4,4 @@ Flask-JWT-Extended==3.18.1
 Flask-SQLAlchemy==2.4.0
 pandas==0.24.2
 passlib==1.7.1
+PyFladesk==1.1
