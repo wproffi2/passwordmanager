@@ -33,28 +33,32 @@ from flask_jwt_extended import (
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    
     return os.path.join(base_path, relative_path)
 
 db_name = 'app.db'
 
 if getattr(sys, 'frozen', False):
-    cur_dir = os.path.dirname(sys.executable)
-    cur_dir = cur_dir + '\\' + db_name
+    #cur_dir = os.path.dirname(sys.executable)
+    #cur_dir = cur_dir + '\\' + db_name
+    cur_dir = resource_path(db_name)
     template_folder = resource_path('templates')
     static_folder = resource_path('static')
+    application = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
         
 else:
     cur_dir = os.path.join(os.path.dirname(__file__), db_name)
+    application = Flask(__name__)
 
 db_uri = 'sqlite:///{}'.format(cur_dir)
 
 #template_folder = os.path.join(sys._MEIPASS, 'templates')
-#application = Flask(__name__, template_folder=template_folder)
-application = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+#
+
 application.config['JWT_SECRET_KEY'] = str(os.urandom(16))
 application.config['JWT_TOKEN_LOCATION'] = ['cookies']
 application.config['JWT_COOKIE_CSRF_PROTECT'] = False
-application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}'.format(db_name)
+application.config['SQLALCHEMY_DATABASE_URI'] = db_uri#'sqlite:///{}'.format(db_name)
 application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 jwt = JWTManager(application)
