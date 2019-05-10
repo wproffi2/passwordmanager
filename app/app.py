@@ -13,6 +13,8 @@ import webbrowser
 import sys, os
 import pandas
 
+from pyfladesk import init_gui
+
 from flask import (
     Flask, render_template, request, 
     redirect, url_for, json, 
@@ -28,13 +30,18 @@ from flask_jwt_extended import (
 
 
 
-
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 db_name = 'app.db'
 
 if getattr(sys, 'frozen', False):
     cur_dir = os.path.dirname(sys.executable)
     cur_dir = cur_dir + '\\' + db_name
+    template_folder = resource_path('templates')
+    static_folder = resource_path('static')
         
 else:
     cur_dir = os.path.join(os.path.dirname(__file__), db_name)
@@ -43,7 +50,7 @@ db_uri = 'sqlite:///{}'.format(cur_dir)
 
 #template_folder = os.path.join(sys._MEIPASS, 'templates')
 #application = Flask(__name__, template_folder=template_folder)
-application = Flask(__name__)
+application = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
 application.config['JWT_SECRET_KEY'] = str(os.urandom(16))
 application.config['JWT_TOKEN_LOCATION'] = ['cookies']
 application.config['JWT_COOKIE_CSRF_PROTECT'] = False
@@ -434,10 +441,11 @@ if __name__ == '__main__':
     try:
         db.create_all()
         #Creates new thread to open app
-        t = Thread(target=OpenLocalHost)
-        t.daemon = True
-        t.start()
-        application.run(debug=False) #Run Flask 
+        #t = Thread(target=OpenLocalHost)
+        #t.daemon = True
+        #t.start()
+        #application.run(debug=False) #Run Flask 
+        init_gui(application)
     except Exception as e:
         print(e)
-        sleep(10)
+        #sleep(10)
