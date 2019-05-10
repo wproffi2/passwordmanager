@@ -1,6 +1,6 @@
 # Password Manager
 
-Python password manager built on Flask Framework
+Python password manager built on Flask Framework. This branch is dedicated to barebones versoin of the application. 
 
 
 # Prerequisites:
