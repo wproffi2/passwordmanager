@@ -14,8 +14,7 @@ def resource_path(relative_path):
 db_name = 'app.db'
 
 if getattr(sys, 'frozen', False):
-    #cur_dir = os.path.dirname(sys.executable)
-    #cur_dir = cur_dir + '\\' + db_name
+    
     cur_dir = resource_path(db_name)
     template_folder = resource_path('templates')
     static_folder = resource_path('static')
