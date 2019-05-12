@@ -16,7 +16,6 @@ class NewManager:
         self.backend = default_backend()
         self.salt = salt
         self.key = self.KeyBuild(key)
-        self.password_ls = Passwords.query.all()
 
 
     def __repr__(self):
@@ -36,9 +35,30 @@ class NewManager:
         return(key)
 
 
+    def encrypt(self, account, password):
+        
+        password = password.encode()
+
+        iv = os.urandom(16)
+        cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
+        enc = cipher.encryptor()
+        ciphertext = enc.update(password) + enc.finalize()
+
+        iv = hexlify(iv).decode()
+        ciphertext = hexlify(ciphertext).decode()
+
+        new_password = Passwords(Account=account, Password=ciphertext, IV=iv)
+        db.session.add(new_password)
+        db.session.commit()
+
+        
+        self.decrypt()
+        return(0)
+
+
     def decrypt(self):
         decrypted_ls = []
-        for password in self.password_ls:
+        for password in Passwords.query.all():
             decrypted_data = {}
             
             account = password.Account
@@ -55,7 +75,30 @@ class NewManager:
         
         self.password_ls = decrypted_ls
         return(0)
-            
+    
+    
+#Pad the password
+def PasswordPad(password):
+    odd_password = ''
+    if len(password) < 16:
+        v = True
+        while v:
+            password += '#'
+            if len(password) == 16:
+                v = False
+
+    elif len(password) > 16 and len(password) < 32:
+        v = True
+        while v:
+            password += '#'
+            if len(password) == 32:
+                v = False
+    
+    elif len(password) > 32:
+        for i in range(32):
+            odd_password += password[i]
+        password = odd_password
+    return(password)
             
 
 
@@ -69,3 +112,8 @@ salt = salt.encode()
 
 test = NewManager(password, salt)
 test.decrypt()
+print(test.password_ls)
+
+test_pass = PasswordPad('test')
+test.encrypt('Test2', test_pass)
+print(test.password_ls)
