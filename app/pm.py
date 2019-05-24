@@ -54,16 +54,20 @@ def NewPass(size):
 
     return(password)
 
+
 class PasswordManager:
     def __init__(self, key, salt):
         self.backend = default_backend()
         self.salt = salt
         self.key = self.KeyBuild(key)
-        self.password_ls = []
 
+
+    def __repr__(self):
+        return "{}\n{}".format(self.key, self.salt)
+
+    #@staticmethod
     def KeyBuild(self, key):
         key = key.encode()
-        
         hdkf = HKDF(
             algorithm = hashes.SHA512(),
             length = 32,
@@ -74,18 +78,8 @@ class PasswordManager:
         key = hdkf.derive(key)
         return(key)
 
-    def UpdateClass(self, key, salt):
-        self.salt = salt
-        key = self.KeyBuild(key)
-        self.key = key
-        self.UpdatePassList()
-        return(0)
 
-    def Encrypt(self, account, size = 0, password = ''):
-        if password == '' and size != 0:
-            password = NewPass(size)
-        else:
-            password = PasswordPad(password)
+    def addPassword(self, account, password):
         
         password = password.encode()
 
@@ -93,56 +87,36 @@ class PasswordManager:
         cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
         enc = cipher.encryptor()
         ciphertext = enc.update(password) + enc.finalize()
-        
+
         iv = hexlify(iv).decode()
         ciphertext = hexlify(ciphertext).decode()
-        
+
         new_password = Passwords(Account=account, Password=ciphertext, IV=iv)
         db.session.add(new_password)
         db.session.commit()
 
-        self.UpdatePassList()
-
+        
+        self.getPasswords()
         return(0)
 
-    def UpdatePassList(self):
-        engine = create_engine(db_uri)
-        data_frame = pandas.read_sql(sql = 'SELECT * FROM passwords', con=engine)
-        enc_password_ls = data_frame.to_dict('records')
 
-        dec_ls = []
-        for d in enc_password_ls:
-            dec_data = {}
-            account = d['Account']
-            enc_pass = d['Password']
-            iv = d['IV']
+    def getPasswords(self):
+        decrypted_ls = []
+        for password in Passwords.query.all():
+            decrypted_data = {}
             
-            iv = iv.encode()
-            iv = unhexlify(iv)
-            enc_pass = enc_pass.encode()
-            enc_pass = unhexlify(enc_pass)
+            account = password.Account
+            epass = unhexlify(password.Password.encode())
+            iv = unhexlify(password.IV.encode())
+            print(password.Count)
 
             cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
             dec = cipher.decryptor()
-            pt = dec.update(enc_pass) + dec.finalize()
-
-            dec_data['Account'] = account
-            dec_data['Password'] = pt.decode()
-            dec_ls.append(dec_data)
-
-        for d in dec_ls:
-            d['Password'] = d['Password'].rstrip('#')
+            dpass = (dec.update(epass) + dec.finalize()).decode().rstrip('#')
+            
+            decrypted_data['Account'] = account
+            decrypted_data['Password'] = dpass
+            decrypted_ls.append(decrypted_data)
         
-        self.password_ls = dec_ls
-        return(0)
-
-    def PasswordDelete(self, account):
-        Passwords.query.filter_by(Account=account).delete()
-        db.session.commit()
-        self.UpdatePassList()
-        return(0)
-    
-    def PasswordUpdate(self, account):
-        self.PasswordDelete(account)
-        self.Encrypt(account)
+        self.password_ls = decrypted_ls
         return(0)

@@ -1,7 +1,5 @@
 import os
-
 from app import db_uri
-
 
 JWT_SECRET_KEY = str(os.urandom(16))
 JWT_TOKEN_LOCATION = ['cookies']

@@ -13,3 +13,4 @@ class Passwords(db.Model):
     Account = db.Column(db.String(80), unique=True, nullable=False)
     Password = db.Column(db.String(500), unique=True, nullable=False)
     IV = db.Column(db.String(500), unique=True, nullable=False)
+    Count = db.Column(db.Integer, nullable=True)

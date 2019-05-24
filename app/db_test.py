@@ -35,7 +35,7 @@ class NewManager:
         return(key)
 
 
-    def encrypt(self, account, password):
+    def addPassword(self, account, password):
         
         password = password.encode()
 
@@ -52,11 +52,11 @@ class NewManager:
         db.session.commit()
 
         
-        self.decrypt()
+        self.getPasswords()
         return(0)
 
 
-    def decrypt(self):
+    def getPasswords(self):
         decrypted_ls = []
         for password in Passwords.query.all():
             decrypted_data = {}
@@ -64,6 +64,7 @@ class NewManager:
             account = password.Account
             epass = unhexlify(password.Password.encode())
             iv = unhexlify(password.IV.encode())
+            print(password.Count)
 
             cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
             dec = cipher.decryptor()
@@ -111,9 +112,11 @@ salt = user.salt
 salt = salt.encode()
 
 test = NewManager(password, salt)
-test.decrypt()
+test.getPasswords()
 print(test.password_ls)
 
+"""
 test_pass = PasswordPad('test')
-test.encrypt('Test2', test_pass)
+test.addPassword('Test4', test_pass)
 print(test.password_ls)
+"""
