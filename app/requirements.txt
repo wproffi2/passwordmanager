@@ -1,5 +1,5 @@
 cryptography==2.6.1
-Flask==1.0.2
+Flask==1.1.1
 Flask-JWT-Extended==3.18.1
 Flask-SQLAlchemy==2.4.0
 pandas==0.24.2
