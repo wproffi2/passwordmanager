@@ -28,6 +28,7 @@ db_uri = 'sqlite:///{}'.format(cur_dir)
 
 application.config.from_pyfile('config.py')
 
+
 db = SQLAlchemy(application)
 from views import *
 

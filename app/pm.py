@@ -79,10 +79,16 @@ class PasswordManager:
         return(key)
 
 
-    def addPassword(self, account, password):
+    def addPassword(self, account, password=None, size=0):
         
-        password = password.encode()
+        if password != None:
+            password = PasswordPad(password)
+            
+        elif size != 0:
+            password = NewPass(size)
 
+        password = password.encode()
+        
         iv = os.urandom(16)
         cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
         enc = cipher.encryptor()
@@ -102,13 +108,15 @@ class PasswordManager:
 
     def getPasswords(self):
         decrypted_ls = []
-        for password in Passwords.query.all():
+        passwords = Passwords.query.all()
+        
+        for password in passwords:
             decrypted_data = {}
             
             account = password.Account
             epass = unhexlify(password.Password.encode())
             iv = unhexlify(password.IV.encode())
-            print(password.Count)
+            #print(password.Count)
 
             cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=self.backend)
             dec = cipher.decryptor()
@@ -118,5 +126,13 @@ class PasswordManager:
             decrypted_data['Password'] = dpass
             decrypted_ls.append(decrypted_data)
         
-        self.password_ls = decrypted_ls
+        #self.password_ls = decrypted_ls
+        return(decrypted_ls)
+
+
+    def deletePassword(self, account):
+        data = Passwords.query.filter_by(Account=account).first()
+        db.session.delete(data)
+        db.session.commit()
         return(0)
+    

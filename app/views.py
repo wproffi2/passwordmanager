@@ -67,8 +67,11 @@ def Login():
             salt = db_user.salt
             salt = salt.encode()
             pass_manager = PasswordManager(password, salt)
-
-            session['pass_manager'] = pass_manager
+            
+            #This is not secure, I plan on updating this in the near future
+            session['key'] = password
+            session['salt'] = salt
+            #session['pass_manager'] = pass_manager
 
             access_token = create_access_token(identity=username)
             resp = make_response(redirect(url_for('Main')))
@@ -83,7 +86,7 @@ def Login():
 #New Password, View Passwords, Update Password
 #Delete Password, and Logout
 @application.route('/main', methods = ['POST', 'GET'])
-@jwt_required
+#@jwt_required
 def Main():
     if request.method == 'POST':
         if request.form['pass'] == 'New Password':
@@ -110,16 +113,15 @@ def Main():
 
 #Displays the newpassword page
 @application.route('/newpassword', methods = ['POST', 'GET'])
-@jwt_required
+#@jwt_required
 def NewPassword():
     if request.method == 'POST':
         account = request.form['account'] #account name
         size = request.form['size'] #requested password size 
         
-
-        pass_manager = session['pass_manager']
-        pass_manager.Encrypt(account, size)#create new password
-        session['pass_manager'] = pass_manager
+        pass_manager = PasswordManager(session['key'], session['salt'])
+        pass_manager.addPassword(account=account, size=size)#create new password
+        
 
         return(redirect(url_for('Main')))
 
@@ -130,7 +132,7 @@ def NewPassword():
 
 #Will display add page
 @application.route('/add', methods = ['POST', 'GET'])
-@jwt_required
+#@jwt_required
 def AddPassword():
     if request.method == 'GET':
         return(render_template('addpassword.html'))
@@ -141,11 +143,10 @@ def AddPassword():
         confirm_password = request.form['Confirm Password']
         if confirm_password != password:
             return(redirect(url_for('AddPassword')))
+        
         else:
-            
-            pass_manager = session['pass_manager']
-            pass_manager.Encrypt(account, 0, password)
-            session['pass_manager'] = pass_manager
+            pass_manager = PasswordManager(session['key'], session['salt'])
+            pass_manager.addPassword(account, password)
             
             return(redirect(url_for('Main')))
 
@@ -154,55 +155,34 @@ def AddPassword():
 
 #Displays the delete page
 @application.route('/delete', methods = ['POST', 'GET'])
-@jwt_required
+#@jwt_required
 def DeletePassword():
-    pass_manager = session['pass_manager']
-    data = pass_manager.password_ls
+    pass_manager = PasswordManager(session['key'], session['salt'])
+    data = pass_manager.getPasswords()
 
     if request.method == 'POST':
-        #data = pass_store.password_ls
         account = request.form['account']
-        pass_manager.PasswordDelete(account)
-        session['pass_manager'] = pass_manager
+        pass_manager.deletePassword(account)
+        
         return(redirect(url_for('Main')))
 
     elif request.method == 'GET':
         return(render_template('delete.html', data=data))
 
 
-
-#Displays the update page
-#Currently does nothning
-@application.route('/update', methods = ['POST', 'GET'])
-@jwt_required
-def UpdatePassword():
-    pass_manager = session['pass_manager']
-    data = pass_manager.password_ls
-    if request.method == 'POST':
-        
-        account = request.form['account']
-        pass_manager.PasswordUpdate(account)
-
-        session['pass_manager'] = pass_manager
-        return(redirect(url_for('Main')))
-
-    elif request.method == 'GET':
-        #data = pass_store.password_ls
-        return(render_template('update.html', data=data))
-
-
-
 #Displays the password page
 @application.route('/passwords', methods = ['POST', 'GET'])
-@jwt_required
+#@jwt_required
 def PasswordDisplay():
     if request.method == 'POST':
         if request.form['pass'] == "Logout":
             return(redirect(url_for('Logout')))
     
     elif request.method == 'GET':
-        pass_manager = session['pass_manager']
-        data = pass_manager.password_ls
+        
+        pass_manager = PasswordManager(session['key'], session['salt'])
+        data = pass_manager.getPasswords()
+
         return render_template('passwords.html', data=data)
 
 
