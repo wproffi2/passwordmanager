@@ -4,13 +4,7 @@ from threading import Thread
 from time import sleep
 import os
 
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token, 
-    get_jwt_identity, current_user, get_jwt_claims, 
-    verify_jwt_in_request, create_refresh_token, 
-    jwt_refresh_token_required, set_access_cookies,
-    unset_jwt_cookies
-)
+from flask_login import login_user
 
 from flask import (
     render_template, request, 
@@ -18,13 +12,14 @@ from flask import (
     jsonify, make_response, session
 )
 
-from app import application, db
+from app import application, db, login_manager
 from models import User, Passwords
 from pm import PasswordManager
 
 
-jwt = JWTManager(application)
-
+@login_manager.user_loader
+def load_user(user_id):
+    return None
 
 def CloseApp():
     #Closes Application
@@ -54,6 +49,7 @@ def Index():
 def Login():
     if request.method == 'GET':
         return(render_template('login.html'))
+    
     elif request.method == 'POST':
         username = request.form['Username']
         password = request.form['Password']
@@ -64,6 +60,7 @@ def Login():
             print('No User Found') #404 Page here
 
         if db_user.username == username and pbkdf2_sha256.verify(password, db_user.password):
+            login_user(db_user)
             salt = db_user.salt
             salt = salt.encode()
             pass_manager = PasswordManager(password, salt)
@@ -73,9 +70,9 @@ def Login():
             session['salt'] = salt
             #session['pass_manager'] = pass_manager
 
-            access_token = create_access_token(identity=username)
+            #access_token = create_access_token(identity=username)
             resp = make_response(redirect(url_for('Main')))
-            set_access_cookies(resp, access_token)
+            #set_access_cookies(resp, access_token)
             
             return(resp)
         else:
@@ -230,7 +227,7 @@ def Shutdown():
 def Logout():
     #removes users cookies
     resp = make_response(render_template('logout.html'))
-    unset_jwt_cookies(resp)
+    
     
     t = Thread(target=CloseApp)
     t.daemon = True

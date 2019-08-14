@@ -1,3 +1,4 @@
+from flask_login import LoginManager, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from pyfladesk import init_gui
 from flask import Flask
@@ -28,8 +29,10 @@ db_uri = 'sqlite:///{}'.format(cur_dir)
 
 application.config.from_pyfile('config.py')
 
-
 db = SQLAlchemy(application)
+login_manager = LoginManager()
+login_manager.init_app(application)
+
 from views import *
 
 if __name__ == '__main__':
