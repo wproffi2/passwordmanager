@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html>
-  <center>
-  <body>
-    <head>
-      <title>Sign Up</title>
-      <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
-    </head>
 
-    <h1>Sign Up</h1>
+<body>
 
+  <head>
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
+  </head>
+
+  <h1>Sign Up</h1>
+  <input type='button' action="action" onclick="window.history.go(-1); return false;" class="back" value="Back">
+  <div>
     <form method="POST">
       Username:<br>
       <input type="text" name="Username">
@@ -20,8 +22,8 @@
       <input type="password" name="Confirm_Password">
       <br><br>
       <input type="submit" class="button" value="Submit">
-    </form> 
-
+    </form>
+  </div>
 </body>
-</center>
+
 </html>

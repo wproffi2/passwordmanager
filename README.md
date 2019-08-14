@@ -1,20 +1,48 @@
 # Password Manager
-A Password Manager I have built for myself using Python and JavaScript.
+
+Python password manager built on Flask Framework. This branch is dedicated to the development and testing of the desktop application.
+
 
 # Prerequisites:
-* Python 3.6 or Newer
-* Latest version of PIP or PIP3
-* cryptography==2.2.2
-* Flask==0.12.2
-* Flask-JWT-Extended==3.12.1
-* Flask-SQLAlchemy==2.3.2
-* pandas==0.23.4
-* passlib==1.7.1
-* SQLite3
-* cx_Freeze 
+
+* Python 3.6.3 or newer
+* Latest version of pip
+
 
 # Installing:
-1. git clone https://github.com/wproffi2/passwordmanager
+
+1. Clone Repo 
+
+    `git clone https://github.com/wproffi2/passwordmanager`
+
+2. Install Libraries
+
+    `pip install -r requirements.txt`
+
+3. Run application 
+
+    `python app.py`
+
+# Built With
+
+* Cryptography: 
+    <https://cryptography.io/en/latest/>
+
+* Flask:
+    <http://flask.pocoo.org/>
+
+* Flask-SQLAlchemy:
+    <https://flask-sqlalchemy.palletsprojects.com/en/2.x/>
+
+* Flask-JWT-Extended:
+    <https://flask-jwt-extended.readthedocs.io/en/latest/>
+
+* Pandas:
+    <https://pandas.pydata.org/>
+
+* Passlib:
+    <https://passlib.readthedocs.io/en/stable/>
 
 # Authors:
-1. Warrie Proffitt, wnprfftt@gmail.com
+
+* Warrie Proffitt
