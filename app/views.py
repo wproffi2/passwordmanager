@@ -55,10 +55,7 @@ def Login():
             username = request.form['Username']
             password = request.form['Password']
             
-            try:
-                db_user = User.query.filter_by(username=username).first()
-            except:
-                print('No User Found') #404 Page here
+            db_user = User.query.filter_by(username=username).first()
 
             if db_user.username == username and pbkdf2_sha256.verify(password, db_user.password):
                 login_user(db_user)
@@ -89,22 +86,22 @@ def Main():
     #planning on changing this soon
     if request.method == 'POST':
         if request.form['pass'] == 'New Password':
-            return(redirect(url_for('NewPassword')))
+            return(redirect(url_for('newPassword')))
         
         elif request.form['pass'] == "Add Password":
-            return(redirect(url_for('AddPassword')))
+            return(redirect(url_for('addPassword')))
 
         elif request.form['pass'] == "View Passwords":
-            return(redirect(url_for('PasswordDisplay')))
+            return(redirect(url_for('displayPasswords')))
 
         elif request.form['pass'] == "Update Password":
             return(redirect(url_for('UpdatePassword')))
         
         elif request.form['pass'] == "Delete Password":
-            return(redirect(url_for('DeletePassword')))
+            return(redirect(url_for('deletePassword')))
 
         elif request.form['pass'] == "Logout":
-            return(redirect(url_for('Logout')))
+            return(redirect(url_for('logout')))
         
     elif request.method == 'GET':
         return(render_template('main.html'))
@@ -113,7 +110,7 @@ def Main():
 #Displays the newpassword page
 @application.route('/newpassword', methods = ['POST', 'GET'])
 @login_required
-def NewPassword():
+def newPassword():
     if request.method == 'POST':
         account = request.form['account'] #account name
         size = request.form['size'] #requested password size 
@@ -132,7 +129,7 @@ def NewPassword():
 #Will display add page
 @application.route('/add', methods = ['POST', 'GET'])
 @login_required
-def AddPassword():
+def addPassword():
     if request.method == 'GET':
         return(render_template('addpassword.html'))
     
@@ -155,7 +152,7 @@ def AddPassword():
 #Displays the delete page
 @application.route('/delete', methods = ['POST', 'GET'])
 @login_required
-def DeletePassword():
+def deletePassword():
     pass_manager = PasswordManager(session['key'], session['salt'])
     data = pass_manager.getPasswords()
 
@@ -172,10 +169,10 @@ def DeletePassword():
 #Displays the password page
 @application.route('/passwords', methods = ['POST', 'GET'])
 @login_required
-def PasswordDisplay():
+def displayPasswords():
     if request.method == 'POST':
         if request.form['pass'] == "Logout":
-            return(redirect(url_for('Logout')))
+            return(redirect(url_for('logout')))
     
     elif request.method == 'GET':
         
@@ -231,7 +228,7 @@ def Shutdown():
 #Displays the logout page and closes the app
 @application.route('/logout')
 @login_required
-def Logout():
+def logout():
     #removes users cookies
     resp = make_response(render_template('logout.html')) 
     
