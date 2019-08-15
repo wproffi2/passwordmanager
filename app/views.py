@@ -91,7 +91,7 @@ def Main():
         elif request.form['pass'] == "Add Password":
             return(redirect(url_for('addPassword')))
 
-        elif request.form['pass'] == "View Passwords":
+        elif request.form['pass'] == "displayPasswords":
             return(redirect(url_for('displayPasswords')))
 
         elif request.form['pass'] == "Update Password":
