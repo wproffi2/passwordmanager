@@ -82,30 +82,30 @@ def Login():
 @application.route('/main', methods = ['POST', 'GET'])
 @login_required
 def Main():
+    try:
+    
+        if request.method == 'POST':
+            if request.form['pass'] == 'newPassword':
+                return(redirect(url_for('newPassword')))
+            
+            elif request.form['pass'] == "addPassword":
+                return(redirect(url_for('addPassword')))
 
-    #planning on changing this soon
-    if request.method == 'POST':
-        if request.form['pass'] == 'New Password':
-            return(redirect(url_for('newPassword')))
-        
-        elif request.form['pass'] == "Add Password":
-            return(redirect(url_for('addPassword')))
+            elif request.form['pass'] == "displayPasswords":
+                return(redirect(url_for('displayPasswords')))
+            
+            elif request.form['pass'] == "deletePassword":
+                return(redirect(url_for('deletePassword')))
 
-        elif request.form['pass'] == "displayPasswords":
-            return(redirect(url_for('displayPasswords')))
-
-        elif request.form['pass'] == "Update Password":
-            return(redirect(url_for('UpdatePassword')))
-        
-        elif request.form['pass'] == "Delete Password":
-            return(redirect(url_for('deletePassword')))
-
-        elif request.form['pass'] == "Logout":
-            return(redirect(url_for('logout')))
-        
-    elif request.method == 'GET':
-        return(render_template('main.html'))
-
+            elif request.form['pass'] == "logout":
+                return(redirect(url_for('logout')))
+            
+        elif request.method == 'GET':
+            return(render_template('main.html'))
+    
+    except Exception as e:
+        error = str(e)
+        return render_template('error.html', error=error)
 
 #Displays the newpassword page
 @application.route('/newpassword', methods = ['POST', 'GET'])
