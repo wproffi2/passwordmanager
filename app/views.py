@@ -85,20 +85,8 @@ def Main():
     try:
     
         if request.method == 'POST':
-            if request.form['pass'] == 'newPassword':
-                return(redirect(url_for('newPassword')))
-            
-            elif request.form['pass'] == "addPassword":
-                return(redirect(url_for('addPassword')))
-
-            elif request.form['pass'] == "displayPasswords":
-                return(redirect(url_for('displayPasswords')))
-            
-            elif request.form['pass'] == "deletePassword":
-                return(redirect(url_for('deletePassword')))
-
-            elif request.form['pass'] == "logout":
-                return(redirect(url_for('logout')))
+            #redirect to another function using button value
+            return(redirect(url_for(request.form['pass'])))
             
         elif request.method == 'GET':
             return(render_template('main.html'))
