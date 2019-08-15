@@ -19,7 +19,7 @@ from pm import PasswordManager
 
 @login_manager.user_loader
 def load_user(user_id):
-    return None
+    return User.query.get(int(user_id))
 
 def CloseApp():
     #Closes Application
@@ -83,7 +83,7 @@ def Login():
 #New Password, View Passwords, Update Password
 #Delete Password, and Logout
 @application.route('/main', methods = ['POST', 'GET'])
-#@login_required
+@login_required
 def Main():
 
     #planning on changing this soon
