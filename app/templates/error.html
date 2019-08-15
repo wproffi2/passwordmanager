@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <head>
+        <title>Welcome to the Alpha</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='mainpage.css') }}">
+    </head>
+    
+    <input type='button' action="action" onclick="window.history.go(-1); return false;" class="back" value="Back">
+    <title>Error</title>
+    
+    <br><br><br>
+    {% if error %}
+        <h1>Error {{ error }}!</h1>
+    {% endif %}
+
+</body>
+
+</html>

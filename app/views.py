@@ -4,7 +4,7 @@ from threading import Thread
 from time import sleep
 import os
 
-from flask_login import login_user
+from flask_login import login_user, login_required
 
 from flask import (
     render_template, request, 
@@ -47,44 +47,46 @@ def Index():
 #Displays the login page
 @application.route('/login', methods = ['POST', 'GET'])
 def Login():
-    if request.method == 'GET':
-        return(render_template('login.html'))
-    
-    elif request.method == 'POST':
-        username = request.form['Username']
-        password = request.form['Password']
-        
-        try:
-            db_user = User.query.filter_by(username=username).first()
-        except:
-            print('No User Found') #404 Page here
-
-        if db_user.username == username and pbkdf2_sha256.verify(password, db_user.password):
-            login_user(db_user)
-            salt = db_user.salt
-            salt = salt.encode()
-            pass_manager = PasswordManager(password, salt)
-            
-            #This is not secure, I plan on updating this in the near future
-            session['key'] = password
-            session['salt'] = salt
-            #session['pass_manager'] = pass_manager
-
-            #access_token = create_access_token(identity=username)
-            resp = make_response(redirect(url_for('Main')))
-            #set_access_cookies(resp, access_token)
-            
-            return(resp)
-        else:
+    try:
+        if request.method == 'GET':
             return(render_template('login.html'))
+        
+        elif request.method == 'POST':
+            username = request.form['Username']
+            password = request.form['Password']
+            
+            try:
+                db_user = User.query.filter_by(username=username).first()
+            except:
+                print('No User Found') #404 Page here
 
+            if db_user.username == username and pbkdf2_sha256.verify(password, db_user.password):
+                login_user(db_user)
+                salt = db_user.salt
+                salt = salt.encode()
+                pass_manager = PasswordManager(password, salt)
+                
+                session['key'] = password
+                session['salt'] = salt
+
+                resp = make_response(redirect(url_for('Main')))
+                
+                return(resp)
+            else:
+                return(render_template('login.html'))
+    
+    except Exception as e:
+        error = str(e)
+        return render_template('error.html', error=error)
 
 #Displays the main page containnig options for 
 #New Password, View Passwords, Update Password
 #Delete Password, and Logout
 @application.route('/main', methods = ['POST', 'GET'])
-#@jwt_required
+#@login_required
 def Main():
+
+    #planning on changing this soon
     if request.method == 'POST':
         if request.form['pass'] == 'New Password':
             return(redirect(url_for('NewPassword')))
@@ -110,7 +112,7 @@ def Main():
 
 #Displays the newpassword page
 @application.route('/newpassword', methods = ['POST', 'GET'])
-#@jwt_required
+@login_required
 def NewPassword():
     if request.method == 'POST':
         account = request.form['account'] #account name
@@ -129,7 +131,7 @@ def NewPassword():
 
 #Will display add page
 @application.route('/add', methods = ['POST', 'GET'])
-#@jwt_required
+@login_required
 def AddPassword():
     if request.method == 'GET':
         return(render_template('addpassword.html'))
@@ -152,7 +154,7 @@ def AddPassword():
 
 #Displays the delete page
 @application.route('/delete', methods = ['POST', 'GET'])
-#@jwt_required
+@login_required
 def DeletePassword():
     pass_manager = PasswordManager(session['key'], session['salt'])
     data = pass_manager.getPasswords()
@@ -169,7 +171,7 @@ def DeletePassword():
 
 #Displays the password page
 @application.route('/passwords', methods = ['POST', 'GET'])
-#@jwt_required
+@login_required
 def PasswordDisplay():
     if request.method == 'POST':
         if request.form['pass'] == "Logout":
@@ -186,25 +188,29 @@ def PasswordDisplay():
 #Displays the sign up page for new users
 @application.route('/signup', methods = ['POST', 'GET'])
 def SignUp():
-    if request.method == 'GET':
-        return(render_template('signup.html'))
-    elif request.method == 'POST':
-        username = request.form['Username']
-        password = request.form['Password']
-        confirm_password = request.form['Confirm_Password']
-        if confirm_password != password:
-            return(redirect(url_for('SignUp')))
-        else:
-            password = pbkdf2_sha256.hash(password)
-            salt = os.urandom(16)
-            salt = hexlify(salt).decode()
+    try:
+        if request.method == 'GET':
+            return(render_template('signup.html'))
+        elif request.method == 'POST':
+            username = request.form['Username']
+            password = request.form['Password']
+            confirm_password = request.form['Confirm_Password']
+            if confirm_password != password:
+                return(redirect(url_for('SignUp')))
+            else:
+                password = pbkdf2_sha256.hash(password)
+                salt = os.urandom(16)
+                salt = hexlify(salt).decode()
 
-            user = User(username=username, password=password, salt=salt)
+                user = User(username=username, password=password, salt=salt)
 
-            db.session.add(user)
-            db.session.commit()
+                db.session.add(user)
+                db.session.commit()
 
-            return(redirect(url_for('Login')))
+                return(redirect(url_for('Login')))
+    except Exception as e:
+        error = str(e)
+        return render_template('error.html', error=error)
     return(0)
 
 
@@ -224,9 +230,10 @@ def Shutdown():
 
 #Displays the logout page and closes the app
 @application.route('/logout')
+@login_required
 def Logout():
     #removes users cookies
-    resp = make_response(render_template('logout.html'))
+    resp = make_response(render_template('logout.html')) 
     
     
     t = Thread(target=CloseApp)
